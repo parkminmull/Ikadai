@@ -1,7 +1,7 @@
 import './App.css';
 import { Canvas } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import MyElement3D from './MyElement3d';
+import MyElement3D from './MyElement3D';
 import Maru from './maru';
 
 function App() {
