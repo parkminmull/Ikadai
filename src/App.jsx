@@ -1,16 +1,41 @@
 import './App.css';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Html, Float, CubeCamera, MeshReflectorMaterial, ScrollControls, useScroll, useTexture } from '@react-three/drei';
-import { useRef, useState, useEffect, forwardRef } from 'react';
+import { Html, Float, CubeCamera, MeshReflectorMaterial, useProgress } from '@react-three/drei';
+import { useRef, useState, useEffect, forwardRef, Suspense } from 'react';
 import * as THREE from 'three';
 import { EffectComposer, Bloom, GodRays } from '@react-three/postprocessing';
 import { easing } from 'maath';
 import MyElement3D from './MyElement3D';
 import Maru from './Maru';
 
+function Loader() {
+  const { progress } = useProgress();
+  return (
+    <div style={{
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      width: '100%', 
+      height: '100%', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      backgroundColor: '#000', 
+      color: 'white',
+      fontSize: '1em',
+      zIndex: 10
+    }}>
+      {progress.toFixed(2)}% loaded
+    </div>
+  );
+}
+
 function App() {
+  const [isLoaded, setIsLoaded] = useState(false);
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '200vh' }}>
+      {!isLoaded && <Loader />}
       <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
         <Canvas
           style={{ background: '#000000' }}
@@ -19,14 +44,17 @@ function App() {
             far: 100,
             position: [7, 3, 0]
           }}
+          onCreated={() => setIsLoaded(true)}
         >
-          <Maru />
-          <MyElement3D />
+          <Suspense fallback={null}>
+            <Maru />
+            <MyElement3D />
+          </Suspense>
         </Canvas>
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 0 }}>
           <div style={{
             color: 'white',
-            fontSize: '5.5vw',
+            fontSize: '4vw',
             padding: '20px',
             fontFamily: 'serif',
             lineHeight: '1.2',
@@ -42,19 +70,21 @@ function App() {
         <Canvas camera={{ position: [0, 0, 30], fov: 35, near: 1, far: 60 }} gl={{ antialias: false }}>
           <color attach="background" args={['#050505']} />
           <ambientLight />
-          <Screen />
-          <Float rotationIntensity={3} floatIntensity={3} speed={1}>
-            <CubeCamera position={[-3, -1, -5]} resolution={256} frames={Infinity}>
-              {(texture) => (
-                <mesh>
-                  <sphereGeometry args={[2, 32, 32]} />
-                  <meshStandardMaterial metalness={1} roughness={0.1} envMap={texture} />
-                </mesh>
-              )}
-            </CubeCamera>
-          </Float>
-          <Floor />
-          <Rig />
+          <Suspense fallback={null}>
+            <Screen />
+            <Float rotationIntensity={3} floatIntensity={3} speed={1}>
+              <CubeCamera position={[-3, -1, -5]} resolution={256} frames={Infinity}>
+                {(texture) => (
+                  <mesh>
+                    <sphereGeometry args={[2, 32, 32]} />
+                    <meshStandardMaterial metalness={1} roughness={0.1} envMap={texture} />
+                  </mesh>
+                )}
+              </CubeCamera>
+            </Float>
+            <Floor />
+            <Rig />
+          </Suspense>
         </Canvas>
       </div>
     </div>
